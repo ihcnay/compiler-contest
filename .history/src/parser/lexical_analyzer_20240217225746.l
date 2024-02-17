@@ -56,8 +56,7 @@ break { pass_node(yytext);return BREAK;}
 \}   { pass_node(yytext); return YH;}
 [ \t]     {}
 [a-fA-F] { pass_node(yytext); return A_F;}
-[g-wyzG-WYZ] { pass_node(yytext); return G_ZNX;}
-[xX] { pass_node(yytext); return X;}
+[g-zG-Z] { pass_node(yytext); return G_Z;}
 0    { pass_node(yytext); return ZERO;}
 [1-7]    { pass_node(yytext); return ONE_SEVEN;}
 [8-9]    { pass_node(yytext); return EIGHT_NINE;}
