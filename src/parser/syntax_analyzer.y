@@ -36,6 +36,10 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 }
 
 /* TODO: Your tokens here. */
+%token <node> AND
+%token <node> OR
+%token <node> BFH
+%token <node> NOT
 %token <node> ADD
 %token <node> SUB
 %token <node> MUL
@@ -84,9 +88,9 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %type <node> Exp Cond LVal PrimaryExp Number
 %type <node> UnaryExp UnaryOp FuncRParams MulExp AddExp RelExp
 %type <node> EqExp LAndExp LOrExp ConstExp
-%type <node> Ident IntConst
+%type <node> Ident IntConst floatConst
 %type <node> SCompUnit
-%type <node> CDef CCD CCI CVD
+%type <node> CDef CCD CCI CVD CIV CFFP CCFFP CB
 
 %start SCompUnit
 
@@ -118,8 +122,8 @@ BType
 |FLOAT{$$ = node( "BType", 1, $1);}
 
 ConstDef
-:Ident EQ ConstInitVal{$$ = node( "ConstDef", 3, $1,$2,$3);}
-|Ident CCD EQ ConstInitVal{$$ = node( "ConstDef", 4, $1,$2,$3,$4);}
+:Ident E ConstInitVal{$$ = node( "ConstDef", 3, $1,$2,$3);}
+|Ident CCD E ConstInitVal{$$ = node( "ConstDef", 4, $1,$2,$3,$4);}
 
 CCD
 :ZF ConstExp YF{$$ = node( "CCD", 3, $1,$2,$3);}
@@ -145,113 +149,149 @@ CVD
 VarDef
 :Ident{$$ = node( "VarDef", 1, $1);}
 |Ident CVDef{$$ = node( "VarDef", 2, $1,$2);}
-|Ident EQ InitVal{$$ = node( "VarDef", 3, $1,$2,$3);}
-|Ident CVDef EQ InitVal{$$ = node( "VarDef", 4, $1,$2,$3,$4);}
+|Ident E InitVal{$$ = node( "VarDef", 3, $1,$2,$3);}
+|Ident CVDef E InitVal{$$ = node( "VarDef", 4, $1,$2,$3,$4);}
 
 CVDef
 :ZF ConstExp YF{$$ = node( "CVDef", 3, $1,$2,$3);}
 
-param-list
-:param-list DH param{$$ = node("param-list",3,$1,$2,$3);}
-|param{$$ = node("param-list",1,$1);};
+InitVal
+:Exp{$$ = node( "InitVal", 1, $1);}
+|ZH YH{$$ = node( "InitVal", 2, $1,$2);}
+|ZH CIV YH{$$ = node( "InitVal", 3, $1,$2,$3);}
 
-param
-:type-specifier ID{$$ = node("param",2,$1,$2);}
-|type-specifier ID ZF YF{$$ = node("param",4,$1,$2,$3,$4);};
+CIV
+:InitVal{$$ = node( "CIV", 1, $1);}
+|InitVal DH CIV{$$ = node( "CIV", 3, $1,$2,$3);}
 
-compound-stmt
-:ZH local-declarations statement-list YH{$$ = node("compound-stmt",4,$1,$2,$3,$4);};
+FuncDef
+:FuncType Ident ZK YK Block{$$ = node( "FuncDef", 5, $1,$2,$3,$4,$5);}
+|FuncType Ident ZK FuncFParams YK Block{$$ = node( "FuncDef", 6, $1,$2,$3,$4,$5,$6);}
 
-local-declarations
-:local-declarations var-declaration{$$ = node("local-declarations",2,$1,$2);}
-|{syntax_tree_node *emp = new_syntax_tree_node("epsilon"); $$ = node( "local-declarations", 1, emp);};
+FuncType
+:VOID{$$ = node( "FuncType", 1, $1);}
+|INT{$$ = node( "FuncType", 1, $1);}
+|FLOAT{$$ = node( "FuncType", 1, $1);}
 
-statement-list
-:statement-list statement{$$ = node("statement-list",2,$1,$2);}
-|{syntax_tree_node *emp = new_syntax_tree_node("epsilon"); $$ = node( "statement-list", 1, emp);};
+FuncFParams
+:FuncFParam{$$ = node( "FuncFParams", 1, $1);}
+|FuncFParam DH FuncFParams{$$ = node( "FuncFParams", 2, $1,$2);}
 
-statement
-:expression-stmt{$$ = node("statement",1,$1);}
-|compound-stmt{$$ = node("statement",1,$1);}
-|selection-stmt{$$ = node("statement",1,$1);}
-|iteration-stmt{$$ = node("statement",1,$1);}
-|return-stmt{$$ = node("statement",1,$1);};
+FuncFParam
+:BType Ident{$$ = node( "FuncFParam", 2, $1,$2);}
+|BType Ident CFFP{$$ = node( "FuncFParam", 3, $1,$2,$3);}
 
-expression-stmt
-:expression FH{$$ = node("expression-stmt",2,$1,$2);}
-|FH{$$ = node("expression-stmt",1,$1);};
+CFFP
+:ZF YF{$$ = node( "CFFP", 2, $1,$2);}
+|ZF YF CCFFP{$$ = node( "CFFP", 3, $1,$2,$3);}
 
-selection-stmt
-:IF ZK expression YK statement{$$ = node("selection-stmt",5,$1,$2,$3,$4,$5);}
-|IF ZK expression YK statement ELSE statement{$$ = node("selection-stmt",7,$1,$2,$3,$4,$5,$6,$7);};
+CCFFP
+:ZF Exp YF{$$ = node( "CCFFP", 3, $1,$2,$3);}
+|ZF Exp YF CCFFP{$$ = node( "CCFFP", 4, $1,$2,$3,$4);}
 
-iteration-stmt
-:WHILE ZK expression YK statement{$$ = node("iteration-stmt",5,$1,$2,$3,$4,$5);};
+Block
+:ZH YH{$$ = node( "Block", 2, $1,$2);}
+|ZH CB YH{$$ = node( "Block", 3, $1,$2,$3);}
 
-return-stmt
-:RETURN FH{$$ = node("return-stmt",2,$1,$2);}
-|RETURN expression FH{$$ = node("return-stmt",3,$1,$2,$3);};
+CB
+:BlockItem{$$ = node( "CB", 1, $1);}
+|BlockItem CB{$$ = node( "CB", 2, $1,$2);}
 
-expression
-:var E expression{$$ = node("expression",3,$1,$2,$3);}
-|simple-expression{$$ = node("expression",1,$1);};
+BlockItem
+:Decl{$$ = node( "BlockItem", 1, $1);}
+|Stmt{$$ = node( "BlockItem", 1, $1);}
 
-var 
-:ID{$$ = node("var",1,$1);}
-|ID ZF expression YF{$$ = node("var",4,$1,$2,$3,$4);};
+Stmt
+:LVal E Exp FH{$$ = node( "Stmt", 4, $1,$2,$3,$4);}
+|FH{$$ = node( "Stmt", 1, $1);}
+|Exp FH{$$ = node( "Stmt", 2, $1,$2);}
+|Block{$$ = node( "Stmt", 1, $1);}
+|IF ZK Cond YK Stmt{$$ = node( "Stmt", 5, $1,$2,$3,$4,$5);}
+|IF ZK Cond YK Stmt ELSE Stmt{$$ = node( "Stmt", 7, $1,$2,$3,$4,$5,$6,$7);}
+|WHILE ZK Cond YK Stmt{$$ = node( "Stmt", 5, $1,$2,$3,$4,$5);}
+|BREAK FH{$$ = node( "Stmt", 2, $1,$2);}
+|CONTINUE FH{$$ = node( "Stmt", 2, $1,$2);}
+|RETURN FH{$$ = node( "Stmt", 2, $1,$2);}
+|RETURN Exp FH{$$ = node( "Stmt", 3, $1,$2,$3);}
 
-simple-expression
-:additive-expression relop additive-expression{$$ = node("simple-expression",3,$1,$2,$3);}
-|additive-expression{$$ = node("simple-expression",1,$1);};
+Exp
+:AddExp{$$ = node( "Exp", 1, $1);}
 
-relop
-:LAE{$$ = node("relop",1,$1);}
-|LESS{$$ = node("relop",1,$1);}
-|GRE{$$ = node("relop",1,$1);}
-|GAE{$$ = node("relop",1,$1);}
-|EQ{$$ = node("relop",1,$1);}
-|UE{$$ = node("relop",1,$1);};
+Cond
+:LOrExp{$$ = node( "Cond", 1, $1);}
 
-additive-expression
-:additive-expression addop term{$$ = node("additive-expression",3,$1,$2,$3);}
-|term{$$ = node("additive-expression",1,$1);};
+LVal
+:Ident{$$ = node( "LVal", 1, $1);}
+|Ident CLV{$$ = node( "LVal", 2, $1,$2);}
 
-addop
-:ADD{$$ = node("addop",1,$1);}
-|SUB{$$ = node("addop",1,$1);};
+CLV
+:ZK Exp YK{$$ = node( "CLV", 3, $1,$2,$3);}
+|ZK Exp YK CLV{$$ = node( "CLV", 4, $1,$2,$3,$4);}
 
-term
-:term mulop factor{$$ = node("term",3,$1,$2,$3);}
-|factor{$$ = node("term",1,$1);};
+PrimaryExp
+:ZK Exp YK{$$ = node( "PrimaryExp", 3, $1,$2,$3);}
+|LVAl{$$ = node( "PrimaryExp", 1, $1);}
+|Number{$$ = node( "PrimaryExp", 1, $1);}
 
-mulop
-:MUL{$$ = node("mulop",1,$1);}
-|DIV{$$ = node("mulop",1,$1);};
+Number
+:IntConst{$$ = node( "Number", 1, $1);}
+|floatConst{$$ = node( "Number", 1, $1);}
 
-factor
-:ZK expression YK{$$ = node("factor",3,$1,$2,$3);}
-|var{$$ = node("factor",1,$1);}
-|call{$$ = node("factor",1,$1);}
-|integer{$$ = node("factor",1,$1);}
-|float{$$ = node("factor",1,$1);};
+UnaryExp
+:PrimaryExp{$$ = node( "UnaryExp", 1, $1);}
+|Ident ZK YK{$$ = node( "UnaryExp", 3, $1,$2,$3);}
+|Ident ZK FuncRParams YK{$$ = node( "UnaryExp", 4, $1,$2,$3,$4);}
+|UnaryOp UnaryExp{$$ = node( "UnaryExp", 2, $1,$2);}
 
-integer
-:INTEGER{$$ = node("integer",1,$1);};
+UnaryOp
+:ADD{$$ = node( "UnaryOp", 1, $1);}
+|SUB{$$ = node( "UnaryOp", 1, $1);}
+|NOT{$$ = node( "UnaryOp", 1, $1);}
 
-float
-:FLOATPOINT{$$ = node("float",1,$1);};
+FuncRParams
+:Exp{$$ = node( "FuncRParams", 1, $1);}
+|Exp DH FuncRParams{$$ = node( "FuncRParams", 3, $1,$2,$3);}
 
-call
-:ID ZK args YK{$$ = node("call",4,$1,$2,$3,$4);};
+MulExp
+:UnaryExp{$$ = node( "MulExp", 1, $1);}
+|MulExp MUL UnaryExp{$$ = node( "MulExp", 3, $1,$2,$3);}
+|MulExp DIV UnaryExp{$$ = node( "MulExp", 3, $1,$2,$3);}
+|MulExp BFH UnaryExp{$$ = node( "MulExp", 3, $1,$2,$3);}
 
-args
-:arg-list{$$ = node("args",1,$1);}
-|{syntax_tree_node *emp = new_syntax_tree_node("epsilon"); $$ = node( "args", 1, emp);};
+AddExp
+:MulExp{$$ = node( "AddExp", 1, $1);}
+|AddExp ADD MulExp{$$ = node( "AddExp", 3, $1,$2,$3);}
+|AddExp SUB MulExp{$$ = node( "AddExp", 3, $1,$2,$3);}
 
-arg-list
-:arg-list DH expression{$$ = node("arg-list",3,$1,$2,$3);}
-|expression{$$ = node("arg-list",1,$1);};
+RelExp
+:AddExp{$$ = node( "RelExp", 1, $1);}
+|RelExp LESS AddExp{$$ = node( "RelExp", 3, $1,$2,$3);}
+|RelExp GRE AddExp{$$ = node( "RelExp", 3, $1,$2,$3);}
+|RelExp LAE AddExp{$$ = node( "RelExp", 3, $1,$2,$3);}
+|RelExp GAE AddExp{$$ = node( "RelExp", 3, $1,$2,$3);}
+
+EqExp
+:RelExp{$$ = node( "EqExp", 1, $1);}
+|EqExp EQ RelExp{$$ = node( "EqExp", 3, $1,$2,$3);}
+|EqExp UE RelExp{$$ = node( "EqExp", 3, $1,$2,$3);}
+
+LAndExp
+:EqExp{$$ = node( "LAndExp", 1, $1);}
+|LAndExp AND EqExp{$$ = node( "LAndExp", 3, $1,$2,$3);}
+
+LOrExp
+:LAndExp{$$ = node( "LOrExp", 1, $1);}
+|LOrExp OR LAndExp{$$ = node( "LOrExp", 3, $1,$2,$3);}
+
+ConstExp
+:AddExp{$$ = node( "ConstExp", 1, $1);}
+
 %%
+
+
+///args:arg-list{$$ = node("args",1,$1);}|{syntax_tree_node *emp = new_syntax_tree_node("epsilon"); $$ = node( "args", 1, emp);};
+
+
 
 /// The error reporting function.
 void yyerror(const char * s)

@@ -23,7 +23,10 @@ void pass_node(char *text){
 %%
  /* to do for students */
  /* two cases for you, pass_node will send flex's token to bison */
-
+\&\&   { pass_node(yytext); return AND;}
+\|\|   { pass_node(yytext); return OR;}
+\%   { pass_node(yytext); return BFH;}
+\!   { pass_node(yytext); return NOT;}
 \+ 	{ pass_node(yytext); return ADD;}
 \- 	{ pass_node(yytext);return SUB;}
 \* 	{ pass_node(yytext);return MUL;}
