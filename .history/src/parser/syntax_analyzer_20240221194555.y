@@ -139,17 +139,12 @@ VarDecl
 |BType VarDef CVD FH{$$ = node( "VarDecl", 4, $1,$2,$3,$4);}
 
 CVD
-:DH Vardef{$$ = node( "CVD", 2, $1,$2);}
-|DH Vardef CVD{$$ = node( "CVD", 3, $1,$2,$3);}
+:DH Vardef{}
+|DH Vardef CVD{}
 
-VarDef
-:Ident{$$ = node( "VarDef", 1, $1);}
-|Ident CVDef{$$ = node( "VarDef", 2, $1,$2);}
-|Ident EQ InitVal{$$ = node( "VarDef", 3, $1,$2,$3);}
-|Ident CVDef EQ InitVal{$$ = node( "VarDef", 4, $1,$2,$3,$4);}
-
-CVDef
-:ZF ConstExp YF{$$ = node( "CVDef", 3, $1,$2,$3);}
+params
+:param-list{$$ = node("params",1,$1);}
+|VOID{$$ = node("params",1,$1);};
 
 param-list
 :param-list DH param{$$ = node("param-list",3,$1,$2,$3);}

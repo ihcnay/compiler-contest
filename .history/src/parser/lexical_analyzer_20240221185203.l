@@ -37,7 +37,6 @@ while { pass_node(yytext);return WHILE;}
 float { pass_node(yytext);return FLOAT;}
 continue { pass_node(yytext);return CONTINUE;}
 break { pass_node(yytext);return BREAK;}
-const { pass_node(yytext);return CONST;}
 \r\n|\n|\r   {}
 \<    { pass_node(yytext); return LESS;}
 \<\=   { pass_node(yytext); return LAE;}

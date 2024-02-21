@@ -23,8 +23,9 @@ void pass_node(char *text){
 %%
  /* to do for students */
  /* two cases for you, pass_node will send flex's token to bison */
-
 \+ 	{ pass_node(yytext); return ADD;}
+
+
 \- 	{ pass_node(yytext);return SUB;}
 \* 	{ pass_node(yytext);return MUL;}
 \/ 	{ pass_node(yytext);return DIV;}
@@ -37,7 +38,6 @@ while { pass_node(yytext);return WHILE;}
 float { pass_node(yytext);return FLOAT;}
 continue { pass_node(yytext);return CONTINUE;}
 break { pass_node(yytext);return BREAK;}
-const { pass_node(yytext);return CONST;}
 \r\n|\n|\r   {}
 \<    { pass_node(yytext); return LESS;}
 \<\=   { pass_node(yytext); return LAE;}

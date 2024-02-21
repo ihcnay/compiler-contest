@@ -86,7 +86,7 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %type <node> EqExp LAndExp LOrExp ConstExp
 %type <node> Ident IntConst
 %type <node> SCompUnit
-%type <node> CDef CCD CCI CVD
+%type <node> CDef
 
 %start SCompUnit
 
@@ -118,38 +118,19 @@ BType
 |FLOAT{$$ = node( "BType", 1, $1);}
 
 ConstDef
-:Ident EQ ConstInitVal{$$ = node( "ConstDef", 3, $1,$2,$3);}
-|Ident CCD EQ ConstInitVal{$$ = node( "ConstDef", 4, $1,$2,$3,$4);}
+:Ident C
 
-CCD
-:ZF ConstExp YF{$$ = node( "CCD", 3, $1,$2,$3);}
-|ZF ConstExp YF CCD{$$ = node( "CCD", 4, $1,$2,$3,$4);}
+type-specifier
+:INT{$$ = node("type-specifier",1,$1);}
+|FLOAT{$$ = node("type-specifier",1,$1);}
+|VOID{$$ = node("type-specifier",1,$1);};
 
-ConstInitVal
-:ConstExp{$$ = node( "ConstInitVal", 1, $1);}
-|ZH YH{$$ = node( "ConstInitVal", 2, $1, $2);} 
-|ZH CCI YH{$$ = node( "ConstInitVal", 3, $1, $2, $3);}
+fun-declaration
+:type-specifier ID ZK params YK compound-stmt{$$ = node("fun-declaration",6,$1,$2,$3,$4,$5,$6);};
 
-CCI
-:ConstInitVal{$$ = node( "CCI", 1, $1);}
-|ConstInitVal DH CCI{$$ = node( "CCI", 3, $1, $2, $3);}
-
-VarDecl
-:BType VarDef FH{$$ = node( "VarDecl", 3, $1,$2,$3);}
-|BType VarDef CVD FH{$$ = node( "VarDecl", 4, $1,$2,$3,$4);}
-
-CVD
-:DH Vardef{$$ = node( "CVD", 2, $1,$2);}
-|DH Vardef CVD{$$ = node( "CVD", 3, $1,$2,$3);}
-
-VarDef
-:Ident{$$ = node( "VarDef", 1, $1);}
-|Ident CVDef{$$ = node( "VarDef", 2, $1,$2);}
-|Ident EQ InitVal{$$ = node( "VarDef", 3, $1,$2,$3);}
-|Ident CVDef EQ InitVal{$$ = node( "VarDef", 4, $1,$2,$3,$4);}
-
-CVDef
-:ZF ConstExp YF{$$ = node( "CVDef", 3, $1,$2,$3);}
+params
+:param-list{$$ = node("params",1,$1);}
+|VOID{$$ = node("params",1,$1);};
 
 param-list
 :param-list DH param{$$ = node("param-list",3,$1,$2,$3);}

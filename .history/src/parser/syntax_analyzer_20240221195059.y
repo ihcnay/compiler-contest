@@ -143,13 +143,13 @@ CVD
 |DH Vardef CVD{$$ = node( "CVD", 3, $1,$2,$3);}
 
 VarDef
-:Ident{$$ = node( "VarDef", 1, $1);}
-|Ident CVDef{$$ = node( "VarDef", 2, $1,$2);}
-|Ident EQ InitVal{$$ = node( "VarDef", 3, $1,$2,$3);}
-|Ident CVDef EQ InitVal{$$ = node( "VarDef", 4, $1,$2,$3,$4);}
+:Ident{}
+|Ident CVDef{}
+|Ident EQ InitVal{}
+|Ident CVDef EQ InitVal{}
 
 CVDef
-:ZF ConstExp YF{$$ = node( "CVDef", 3, $1,$2,$3);}
+:ZF ConstExp YF
 
 param-list
 :param-list DH param{$$ = node("param-list",3,$1,$2,$3);}
