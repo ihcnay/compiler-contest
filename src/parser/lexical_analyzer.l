@@ -58,8 +58,12 @@ const { pass_node(yytext);return CONST;}
 \{   { pass_node(yytext); return ZH;}
 \}   { pass_node(yytext); return YH;}
 [ \t]     {}
-[a-fA-F] { pass_node(yytext); return A_F;}
-[g-wyzG-WYZ] { pass_node(yytext); return G_ZNX;}
+
+[eE] { pass_node(yytext); return E;}
+[pP] { pass_node(yytext); return P;}
+
+[a-efA-EF] { pass_node(yytext); return A_FNE;}
+[g-oq-wyzG-OQ-WYZ] { pass_node(yytext); return G_ZNPX;}
 [xX] { pass_node(yytext); return X;}
 0    { pass_node(yytext); return ZERO;}
 [1-7]    { pass_node(yytext); return ONE_SEVEN;}

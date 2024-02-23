@@ -72,9 +72,12 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %token <node> ZH
 %token <node> YH
 
-%token <node> A_F
-%token <node> G_ZNX
+
+%token <node> E
+%token <node> P
 %token <node> X
+%token <node> A_FNE
+%token <node> G_ZNPX
 %token <node> ZERO
 %token <node> ONE_SEVEN
 %token <node> EIGHT_NINE
@@ -91,6 +94,12 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %type <node> Ident IntConst floatConst
 %type <node> SCompUnit
 %type <node> CDef CCD CCI CVD CIV CFFP CCFFP CB
+%type <node> ident_nondigit ident_digit
+%type <node> decimal_const octal_const hexadecimal_const
+%type <node> nonzero_digit digit octal_digit
+%type <node> hexadecimal_prefix hexadecimal_digit
+%type <node> dec_flo_cons hex_flo_cons fra_cons exp_part
+%type <node> dig_seq hex_fra_cons bin_exp_part hex_dig_seq
 
 %start SCompUnit
 
@@ -285,6 +294,106 @@ LOrExp
 
 ConstExp
 :AddExp{$$ = node( "ConstExp", 1, $1);}
+
+Ident
+:ident_nondigit{$$ = node( "Ident", 1, $1);}
+|Ident ident_nondigit{$$ = node( "Ident", 2, $1,$2);}
+|Ident ident_digit{$$ = node( "Ident", 2, $1,$2);}
+
+ident_nondigit
+:A_FNE{$$ = node( "ident_nondigit", 1, $1);}
+|E{$$ = node( "ident_nondigit", 1, $1);}
+|G_ZNPX{$$ = node( "ident_nondigit", 1, $1);}
+|P{$$ = node( "ident_nondigit", 1, $1);}
+|X{$$ = node( "ident_nondigit", 1, $1);}
+
+ident_digit
+:ZERO{$$ = node( "ident_digit", 1, $1);}
+|ONE_SEVEN{$$ = node( "ident_digit", 1, $1);}
+|EIGHT_NINE{$$ = node( "ident_digit", 1, $1);}
+
+IntConst
+:decimal_const{$$ = node( "IntConst", 1, $1);}
+|octal_const{$$ = node( "IntConst", 1, $1);}
+|hexadecimal_const{$$ = node( "IntConst", 1, $1);}
+
+decimal_const
+:nonzero_digit{$$ = node( "decimal_const", 1, $1);}
+|decimal_const digit{$$ = node( "decimal_const", 2, $1,$2);}
+
+octal_const
+:ZERO{$$ = node( "octal_const", 1, $1);}
+|octal_const octal_digit{$$ = node( "octal_const", 2, $1,$2);}
+
+hexadecimal_const
+:hexadecimal_prefix hexadecimal_digit{$$ = node( "hexadecimal_const", 2, $1,$2);}
+|hexadecimal_const hexadecimal_digit{$$ = node( "hexadecimal_const", 2, $1,$2);}
+
+hexadecimal_prefix
+:ZERO X{$$ = node( "hexadecimal_prefix", 2, $1,$2);}
+
+digit
+:ZERO{$$ = node( "digit", 1, $1);}
+|ONE_SEVEN{$$ = node( "digit", 1, $1);}
+|EIGHT_NINE{$$ = node( "digit", 1, $1);}
+
+nonzero_digit
+:ONE_SEVEN{$$ = node( "nonzero_digit", 1, $1);}
+|EIGHT_NINE{$$ = node( "nonzero_digit", 1, $1);}
+
+octal_digit
+:ZERO{$$ = node( "octal_digit", 1, $1);}
+|ONE_SEVEN{$$ = node( "octal_digit", 1, $1);}
+
+hexadecimal_digit
+:ZERO{$$ = node( "hexadecimal_digit", 1, $1);}
+|ONE_SEVEN{$$ = node( "hexadecimal_digit", 1, $1);}
+|EIGHT_NINE{$$ = node( "hexadecimal_digit", 1, $1);}
+|A_FNE{$$ = node( "hexadecimal_digit", 1, $1);}
+|E{$$ = node( "hexadecimal_digit", 1, $1);}
+
+floatConst
+:dec_flo_cons{$$ = node( "floatConst", 1, $1);}
+|hex_flo_cons{$$ = node( "floatConst", 1, $1);}
+
+dec_flo_cons
+:fra_cons exp_part{}
+|fra_cons{}
+|dig_seq exp_part{}
+
+hex_flo_cons
+:hexadecimal_prefix hex_fra_cons bin_exp_part{}
+|hexadecimal_prefix hex_dig_seq bin_exp_part{}
+
+fra_cons
+:dig_seq DOT dig_seq{}
+|DOT dig_seq{}
+|dig_seq DOT{}
+
+exp_part
+:E sign dig_seq{}
+|E dig_seq{}
+
+sign
+:ADD{}
+|SUB{}
+
+dig_seq
+:digit{}
+|dig_seq digit{}
+
+hex_fra_cons
+:hex_dig_seq DOT hex_dig_seq{}
+|DOT hex_dig_seq{}
+|hex_dig_seq DOT{}
+
+bin_exp_part
+:P sign dig_seq{}
+|P dig_seq{}
+
+hex_dig_seq
+:hexadecimal_digit{}
+|hex_dig_seq hexadecimal_digit{}
 
 %%
 
