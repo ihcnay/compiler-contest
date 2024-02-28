@@ -92,7 +92,7 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %type <node> UnaryExp UnaryOp FuncRParams MulExp AddExp RelExp
 %type <node> EqExp LAndExp LOrExp ConstExp
 %type <node> Ident IntConst floatConst
-%type <node> SCompUnit
+%type <node> program
 %type <node> CDef CCD CCI CVD CIV CLV CFFP CCFFP CB
 %type <node> ident_nondigit ident_digit
 %type <node> decimal_const octal_const hexadecimal_const
@@ -101,11 +101,11 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %type <node> dec_flo_cons hex_flo_cons fra_cons exp_part
 %type <node> dig_seq hex_fra_cons bin_exp_part hex_dig_seq
 
-%start SCompUnit
+%start program
 
 %%
-SCompUnit
-:CompUnit{$$ = node( "SCompUnit", 1, $1); gt->root = $$;}
+program
+:CompUnit{$$ = node( "program", 1, $1); gt->root = $$;}
 
 
 CompUnit
