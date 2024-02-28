@@ -62,7 +62,7 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 %token <node> GAE
 %token <node> EQ
 %token <node> UE
-%token <node> E
+%token <node> E_
 %token <node> FH
 %token <node> DH
 %token <node> ZK
@@ -86,14 +86,14 @@ syntax_tree_node *node(const char *node_name, int children_num, ...);
 
 
 %type <node> CompUnit Decl ConstDecl BType ConstDef ConstInitVal VarDecl
-%type <node> VarDef InitVal FuncDef FuncType FuncFParams
+%type <node> VarDef CVDef InitVal FuncDef FuncType FuncFParams
 %type <node> FuncFParam Block BlockItem Stmt
 %type <node> Exp Cond LVal PrimaryExp Number
 %type <node> UnaryExp UnaryOp FuncRParams MulExp AddExp RelExp
 %type <node> EqExp LAndExp LOrExp ConstExp
 %type <node> Ident IntConst floatConst
 %type <node> SCompUnit
-%type <node> CDef CCD CCI CVD CIV CFFP CCFFP CB
+%type <node> CDef CCD CCI CVD CIV CLV CFFP CCFFP CB
 %type <node> ident_nondigit ident_digit
 %type <node> decimal_const octal_const hexadecimal_const
 %type <node> nonzero_digit digit octal_digit
@@ -131,8 +131,8 @@ BType
 |FLOAT{$$ = node( "BType", 1, $1);}
 
 ConstDef
-:Ident E ConstInitVal{$$ = node( "ConstDef", 3, $1,$2,$3);}
-|Ident CCD E ConstInitVal{$$ = node( "ConstDef", 4, $1,$2,$3,$4);}
+:Ident E_ ConstInitVal{$$ = node( "ConstDef", 3, $1,$2,$3);}
+|Ident CCD E_ ConstInitVal{$$ = node( "ConstDef", 4, $1,$2,$3,$4);}
 
 CCD
 :ZF ConstExp YF{$$ = node( "CCD", 3, $1,$2,$3);}
@@ -152,14 +152,14 @@ VarDecl
 |BType VarDef CVD FH{$$ = node( "VarDecl", 4, $1,$2,$3,$4);}
 
 CVD
-:DH Vardef{$$ = node( "CVD", 2, $1,$2);}
-|DH Vardef CVD{$$ = node( "CVD", 3, $1,$2,$3);}
+:DH VarDef{$$ = node( "CVD", 2, $1,$2);}
+|DH VarDef CVD{$$ = node( "CVD", 3, $1,$2,$3);}
 
 VarDef
 :Ident{$$ = node( "VarDef", 1, $1);}
 |Ident CVDef{$$ = node( "VarDef", 2, $1,$2);}
-|Ident E InitVal{$$ = node( "VarDef", 3, $1,$2,$3);}
-|Ident CVDef E InitVal{$$ = node( "VarDef", 4, $1,$2,$3,$4);}
+|Ident E_ InitVal{$$ = node( "VarDef", 3, $1,$2,$3);}
+|Ident CVDef E_ InitVal{$$ = node( "VarDef", 4, $1,$2,$3,$4);}
 
 CVDef
 :ZF ConstExp YF{$$ = node( "CVDef", 3, $1,$2,$3);}
@@ -211,7 +211,7 @@ BlockItem
 |Stmt{$$ = node( "BlockItem", 1, $1);}
 
 Stmt
-:LVal E Exp FH{$$ = node( "Stmt", 4, $1,$2,$3,$4);}
+:LVal E_ Exp FH{$$ = node( "Stmt", 4, $1,$2,$3,$4);}
 |FH{$$ = node( "Stmt", 1, $1);}
 |Exp FH{$$ = node( "Stmt", 2, $1,$2);}
 |Block{$$ = node( "Stmt", 1, $1);}
@@ -239,7 +239,7 @@ CLV
 
 PrimaryExp
 :ZK Exp YK{$$ = node( "PrimaryExp", 3, $1,$2,$3);}
-|LVAl{$$ = node( "PrimaryExp", 1, $1);}
+|LVal{$$ = node( "PrimaryExp", 1, $1);}
 |Number{$$ = node( "PrimaryExp", 1, $1);}
 
 Number

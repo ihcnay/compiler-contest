@@ -48,7 +48,7 @@ const { pass_node(yytext);return CONST;}
 \>\=   { pass_node(yytext); return GAE;}
 \=\=   { pass_node(yytext); return EQ;}
 \!\=   { pass_node(yytext); return UE;}
-\=    { pass_node(yytext); return E;}
+\=    { pass_node(yytext); return E_;}
 \;    { pass_node(yytext); return FH;}
 \,    { pass_node(yytext); return DH;}
 \(   { pass_node(yytext); return ZK;}
